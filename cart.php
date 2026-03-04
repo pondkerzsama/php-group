@@ -8,7 +8,7 @@ $user_id = $_SESSION['user_id'];
 
 // ดึงข้อมูลสินค้าในตะกร้า
 $sql = "
-    SELECT ci.id as item_id, ci.quantity, p.id as product_id, p.name, p.price, p.image, p.stock
+    SELECT ci.id as item_id, ci.quantity, p.id as product_id, p.productname, p.price, p.img, p.stock
     FROM cart_items ci
     JOIN carts c ON ci.cart_id = c.id
     JOIN products p ON ci.product_id = p.id
@@ -94,13 +94,13 @@ foreach ($cart_items as $item) {
                     <?php foreach($cart_items as $item): ?>
                         <tr class="text-gray-800 dark:text-white">
                             <td class="p-4 flex items-center gap-4">
-                                <?php if($item['image']): ?>
-                                    <img src="uploads/<?= htmlspecialchars($item['image']) ?>" alt="<?= htmlspecialchars($item['name']) ?>" class="w-16 h-16 object-cover rounded-md">
+                                <?php if($item['img']): ?>
+                                    <img src="<?= htmlspecialchars($item['img']) ?>" alt="<?= htmlspecialchars($item['productname']) ?>" class="w-16 h-16 object-cover rounded-md">
                                 <?php else: ?>
                                     <div class="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center text-xs text-gray-500">No Image</div>
                                 <?php endif; ?>
                                 <div>
-                                    <div class="font-bold line-clamp-2"><?= htmlspecialchars($item['name']) ?></div>
+                                    <div class="font-bold line-clamp-2"><?= htmlspecialchars($item['productname']) ?></div>
                                     <div class="text-xs text-green-600 dark:text-green-400">คงเหลือ <?= $item['stock'] ?> ชิ้น</div>
                                 </div>
                             </td>
