@@ -2,10 +2,7 @@
 session_start();
 require_once 'includes/db.php';
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: auth.php");
-    exit();
-}
+// ลบโค้ดบังคับล็อกอินออกไป เพื่อให้ Guest เข้ามาดูหน้านี้ได้
 
 $categories = [];
 try {
@@ -58,9 +55,13 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $products = $stmt->fetchAll();
 
-$stmt_cart = $pdo->prepare("SELECT SUM(quantity) FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ?");
-$stmt_cart->execute([$_SESSION['user_id']]);
-$cart_count = $stmt_cart->fetchColumn() ?: 0;
+// เพิ่มเงื่อนไขเช็คว่าล็อกอินหรือยัง ก่อนดึงจำนวนสินค้าในตะกร้า
+$cart_count = 0;
+if (isset($_SESSION['user_id'])) {
+    $stmt_cart = $pdo->prepare("SELECT SUM(quantity) FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.user_id = ?");
+    $stmt_cart->execute([$_SESSION['user_id']]);
+    $cart_count = $stmt_cart->fetchColumn() ?: 0;
+}
 
 $price_range = $pdo->query("SELECT MIN(price) as mn, MAX(price) as mx FROM products")->fetch();
 $is_filtered = $search !== '' || $category_id !== '' || $min_price !== '' || $max_price !== '';
@@ -107,17 +108,22 @@ $is_filtered = $search !== '' || $category_id !== '' || $min_price !== '' || $ma
             </a>
             <div class="flex items-center gap-3">
                 <button onclick="toggleTheme()" class="p-2 rounded-md hover:bg-gray-700 transition">🌙/☀️</button>
-                <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                    <a href="admin_index.php" class="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded-md text-sm font-medium transition">⚙️ Admin</a>
-                <?php endif; ?>
-                <a href="cart.php" class="flex items-center gap-1.5 hover:bg-indigo-500 px-3 py-2 rounded-md text-sm font-medium transition">
-                    🛒
-                    <?php if($cart_count > 0): ?>
-                        <span class="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-bold"><?= $cart_count ?></span>
+                
+                <?php if(isset($_SESSION['user_id'])): ?>
+                    <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                        <a href="admin_index.php" class="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded-md text-sm font-medium transition text-black">⚙️ Admin</a>
                     <?php endif; ?>
-                </a>
-                <span class="text-gray-300 text-sm hidden md:block">สวัสดี, <b><?= htmlspecialchars($_SESSION['username']) ?></b></span>
-                <a href="logout.php" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-sm font-medium transition">ออกระบบ</a>
+                    <a href="cart.php" class="flex items-center gap-1.5 hover:bg-indigo-500 px-3 py-2 rounded-md text-sm font-medium transition">
+                        🛒
+                        <?php if($cart_count > 0): ?>
+                            <span class="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-bold"><?= $cart_count ?></span>
+                        <?php endif; ?>
+                    </a>
+                    <span class="text-gray-300 text-sm hidden md:block">สวัสดี, <b><?= htmlspecialchars($_SESSION['username']) ?></b></span>
+                    <a href="logout.php" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-sm font-medium transition">ออกระบบ</a>
+                <?php else: ?>
+                    <a href="auth.php" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition shadow-md">ล็อกอิน / สมัครสมาชิก</a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -132,7 +138,6 @@ $is_filtered = $search !== '' || $category_id !== '' || $min_price !== '' || $ma
         <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-5 border border-red-200">⚠️ <?= htmlspecialchars($_SESSION['error_msg']); unset($_SESSION['error_msg']); ?></div>
     <?php endif; ?>
 
-    <!-- Filter Bar -->
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 mb-6">
         <form method="GET">
             <div class="grid grid-cols-2 md:grid-cols-6 gap-3 items-end">
@@ -191,7 +196,6 @@ $is_filtered = $search !== '' || $category_id !== '' || $min_price !== '' || $ma
         </form>
     </div>
 
-    <!-- Header + active filters -->
     <div class="flex flex-wrap items-center gap-3 mb-5">
         <h1 class="text-xl font-bold text-gray-800 dark:text-white">
             <?= $is_filtered ? 'ผลการค้นหา' : 'สินค้าทั้งหมด' ?>
@@ -207,7 +211,6 @@ $is_filtered = $search !== '' || $category_id !== '' || $min_price !== '' || $ma
         <?php endif; ?>
     </div>
 
-    <!-- Product Grid -->
     <?php if(count($products) > 0): ?>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             <?php foreach($products as $p): ?>
@@ -235,12 +238,18 @@ $is_filtered = $search !== '' || $category_id !== '' || $min_price !== '' || $ma
                             <span class="text-lg font-extrabold text-green-600 dark:text-green-400 whitespace-nowrap">฿<?= number_format($p['price'], 2) ?></span>
 
                             <?php if($stock > 0): ?>
-                                <form action="actions/add_to_cart.php" method="POST" class="shrink-0">
-                                    <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
-                                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all whitespace-nowrap">
+                                <?php if(isset($_SESSION['user_id'])): ?>
+                                    <form action="actions/add_to_cart.php" method="POST" class="shrink-0">
+                                        <input type="hidden" name="product_id" value="<?= $p['id'] ?>">
+                                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all whitespace-nowrap">
+                                            + ตะกร้า
+                                        </button>
+                                    </form>
+                                <?php else: ?>
+                                    <a href="auth.php" onclick="alert('กรุณาเข้าสู่ระบบ หรือสมัครสมาชิกก่อนหยิบสินค้าใส่ตะกร้านะครับ 🛒');" class="shrink-0 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl transition-all whitespace-nowrap flex items-center">
                                         + ตะกร้า
-                                    </button>
-                                </form>
+                                    </a>
+                                <?php endif; ?>
                             <?php else: ?>
                                 <span class="text-xs text-gray-400 dark:text-gray-500">สินค้าหมด</span>
                             <?php endif; ?>

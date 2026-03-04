@@ -10,54 +10,74 @@ $categories = $stmt_cats->fetchAll();
 
 ?>
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="light">
 <head>
     <meta charset="UTF-8">
     <title>Add New Product - 🛒Gameproduct Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script>
+        // ตรวจสอบค่าธีมตอนโหลดหน้าเว็บ
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // ฟังก์ชันสลับธีมพร้อมบันทึกค่า
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        }
+    </script>
 </head>
-<body class="bg-[#f0f2f5] min-h-screen text-slate-800 flex flex-col">
+<body class="bg-[#f0f2f5] dark:bg-gray-900 min-h-screen text-slate-800 dark:text-gray-200 flex flex-col transition-colors duration-200">
     
     <?php include 'includes/navbar.php'; ?>
 
     <div class="flex-1 flex items-center justify-center p-6">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 text-center">🆕 เพิ่มสินค้าใหม่</h2>
+        <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-100 dark:border-gray-700 transition-colors duration-200">
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 text-center">🆕 เพิ่มสินค้าใหม่</h2>
             
             <form action="actions/save_product.php" method="POST" enctype="multipart/form-data" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600">ชื่อสินค้า</label>
+                    <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300">ชื่อสินค้า</label>
                     <input type="text" name="productname" required 
-                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" 
+                        class="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" 
                         placeholder="เช่น Mechanical Keyboard Custom"> 
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600">รายละเอียด</label>
+                    <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300">รายละเอียด</label>
                     <textarea name="detail" rows="3" 
-                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" 
+                        class="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" 
                         placeholder="ระบุรายละเอียดสินค้า..."></textarea>
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-600">ราคา (฿)</label>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300">ราคา (฿)</label>
                         <input type="number" step="0.01" name="price" required 
-                            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" 
+                            class="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" 
                             placeholder="0.00">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-gray-600">จำนวนในสต็อก</label>
+                        <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300">จำนวนในสต็อก</label>
                         <input type="number" name="stock" required 
-                            class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" 
+                            class="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" 
                             placeholder="0" min="0">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600">หมวดหมู่</label>
+                    <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300">หมวดหมู่</label>
                     <select name="category_id" required
-                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                        class="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                         <option value="">-- เลือกหมวดหมู่ --</option>
                         <?php foreach ($categories as $cat): ?>
                             <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['name']) ?></option>
@@ -66,27 +86,27 @@ $categories = $stmt_cats->fetchAll();
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600">วันที่ผลิต</label>
+                    <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300">วันที่ผลิต</label>
                     <input type="date" name="production_date"
-                        class="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
+                        class="mt-1 block w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none transition">
                 </div>
 
-                <div class="bg-gray-50 p-4 rounded-xl border border-dashed border-gray-300">
-                    <label class="block text-sm font-semibold text-gray-600 mb-2">รูปภาพสินค้า (เลือกอย่างใดอย่างหนึ่ง)</label>
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 transition-colors">
+                    <label class="block text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">รูปภาพสินค้า (เลือกอย่างใดอย่างหนึ่ง)</label>
                     <input type="text" name="img" placeholder="วาง URL รูปภาพ (https://...) หรือ path รูปภาพ" 
-                        class="block w-full px-4 py-2 border border-gray-300 rounded-lg text-sm mb-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        class="block w-full px-4 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 dark:text-white rounded-lg text-sm mb-3 focus:ring-2 focus:ring-indigo-500 outline-none transition">
                     
                     <div class="relative">
                         <input type="file" name="img_file" accept="image/*" 
-                            class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                            class="block w-full text-xs text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 dark:file:bg-indigo-900/30 file:text-indigo-700 dark:file:text-indigo-400 hover:file:bg-indigo-100 dark:hover:file:bg-indigo-800/50 cursor-pointer transition">
                     </div>
                 </div>
 
                 <div class="flex gap-3 pt-4">
                     <button type="submit" 
-                        class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95">บันทึก</button>
+                        class="flex-1 bg-indigo-600 text-white py-2.5 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-95">บันทึก</button>
                     <a href="admin_index.php" 
-                        class="flex-1 bg-gray-100 text-gray-500 py-2.5 rounded-xl font-bold text-center hover:bg-gray-200 transition-all">ยกเลิก</a>
+                        class="flex-1 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 py-2.5 rounded-xl font-bold text-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-all">ยกเลิก</a>
                 </div>
             </form>
         </div>

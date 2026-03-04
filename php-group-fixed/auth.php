@@ -140,6 +140,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             50%       { transform: translateY(30px) scale(1.05); }
         }
 
+        /* Back Button */
+        .btn-back {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 600;
+            z-index: 20;
+            transition: color 0.2s ease, transform 0.2s ease;
+            padding: 10px 16px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            backdrop-filter: blur(10px);
+        }
+        .btn-back:hover {
+            color: var(--text);
+            background: rgba(255,255,255,0.05);
+            transform: translateX(-4px);
+        }
+
         /* Card */
         .card {
             position: relative;
@@ -262,22 +288,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         .alert-error   { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
         .alert-success { background: rgba(34,197,94,0.12);  border: 1px solid rgba(34,197,94,0.3);  color: #86efac; }
 
-        /* Divider */
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--muted);
-            font-size: 0.75rem;
-            margin: 20px 0;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
         /* Hint text */
         .hint {
             text-align: center;
@@ -295,14 +305,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
         /* Space */
         .space { margin-bottom: 16px; }
+
+        /* Responsive Back Button for Mobile */
+        @media (max-width: 600px) {
+            .btn-back {
+                top: 15px;
+                left: 15px;
+                font-size: 0.85rem;
+                padding: 8px 12px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="orb orb-1"></div>
     <div class="orb orb-2"></div>
 
+    <a href="index.php" class="btn-back">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        กลับหน้าร้านค้า
+    </a>
+
     <div class="card">
-        <!-- Logo -->
         <div style="text-align:center; margin-bottom:28px;">
             <div style="font-size:2.2rem; margin-bottom:6px;">🛒</div>
             <div class="logo">GAMEPRODUCT STORE</div>
@@ -313,13 +339,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             <div class="alert alert-success"><?= htmlspecialchars($reg_success) ?></div>
         <?php endif; ?>
 
-        <!-- Tab Bar -->
         <div class="tab-bar">
             <button class="tab-btn <?= $active_tab === 'login'    ? 'active' : '' ?>" onclick="switchTab('login')">เข้าสู่ระบบ</button>
             <button class="tab-btn <?= $active_tab === 'register' ? 'active' : '' ?>" onclick="switchTab('register')">สมัครสมาชิก</button>
         </div>
 
-        <!-- LOGIN PANEL -->
         <div id="panel-login" class="panel <?= $active_tab === 'login' ? 'active' : '' ?>">
             <?php if ($login_error): ?>
                 <div class="alert alert-error">⚠️ <?= htmlspecialchars($login_error) ?></div>
@@ -340,7 +364,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             <div class="hint">ยังไม่มีบัญชี? <a onclick="switchTab('register')">สมัครสมาชิกฟรี</a></div>
         </div>
 
-        <!-- REGISTER PANEL -->
         <div id="panel-register" class="panel <?= $active_tab === 'register' ? 'active' : '' ?>">
             <?php if ($reg_error): ?>
                 <div class="alert alert-error">⚠️ <?= htmlspecialchars($reg_error) ?></div>
