@@ -73,6 +73,25 @@ $is_filtered = $search !== '' || $category_id !== '' || $min_price !== '' || $ma
     <title>🛒 Gameproduct Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>tailwind.config = { darkMode: 'class' }</script>
+    <script>
+        // ตรวจสอบค่าธีมตอนโหลดหน้าเว็บ
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        // ฟังก์ชันสลับธีมพร้อมบันทึกค่า
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        }
+    </script>
     <style>
         .product-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
@@ -87,7 +106,7 @@ $is_filtered = $search !== '' || $category_id !== '' || $min_price !== '' || $ma
                 <span class="text-2xl">🛒</span> Gameproduct Store
             </a>
             <div class="flex items-center gap-3">
-                <button onclick="document.documentElement.classList.toggle('dark')" class="p-2 rounded-md hover:bg-gray-700 transition">🌙</button>
+                <button onclick="toggleTheme()" class="p-2 rounded-md hover:bg-gray-700 transition">🌙/☀️</button>
                 <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                     <a href="admin_index.php" class="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded-md text-sm font-medium transition">⚙️ Admin</a>
                 <?php endif; ?>

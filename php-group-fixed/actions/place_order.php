@@ -16,7 +16,7 @@ try {
             JOIN carts c ON ci.cart_id = c.id
             JOIN products p ON ci.product_id = p.id
             WHERE c.user_id = ?
-            FOR UPDATE";  // lock rows เพื่อป้องกัน race condition
+            FOR UPDATE";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$user_id]);
     $items = $stmt->fetchAll();
@@ -29,23 +29,29 @@ try {
     }
 
     $order_summary = [];
-    $adjusted      = [];   // รายการที่ต้องปรับจำนวน
-    $removed       = [];   // รายการที่หมดสต็อก
+    $adjusted      = [];
+    $removed       = [];
+    $total_price   = 0;
 
-    // 2. ตรวจสอบและตัด stock ทีละรายการ
+    // สร้าง Order เปล่าๆ ไว้ก่อนเพื่อเอา Order ID
+    $stmt_order = $pdo->prepare("INSERT INTO orders (user_id, total_price) VALUES (?, 0)");
+    $stmt_order->execute([$user_id]);
+    $order_id = $pdo->lastInsertId();
+
+    // 2. ตรวจสอบ ตัด stock และบันทึก order_items
     foreach ($items as $item) {
         $available = (int)$item['stock'];
         $wanted    = (int)$item['quantity'];
 
         if ($available <= 0) {
-            // หมดแล้ว ข้ามไป
             $removed[] = $item['productname'];
-            // ลบออกจากตะกร้า
             $pdo->prepare("DELETE FROM cart_items WHERE id = ?")->execute([$item['item_id']]);
             continue;
         }
 
         $actual_qty = min($wanted, $available);
+        $item_total = $actual_qty * $item['price'];
+        $total_price += $item_total;
 
         if ($actual_qty < $wanted) {
             $adjusted[] = "{$item['productname']} (ปรับเป็น {$actual_qty} ชิ้น)";
@@ -55,17 +61,29 @@ try {
         $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?")
             ->execute([$actual_qty, $item['product_id'], $actual_qty]);
 
+        // บันทึกลง order_items
+        $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_time) VALUES (?, ?, ?, ?)")
+            ->execute([$order_id, $item['product_id'], $actual_qty, $item['price']]);
+
         $order_summary[] = "{$item['productname']} x{$actual_qty}";
 
         // ลบออกจากตะกร้า
         $pdo->prepare("DELETE FROM cart_items WHERE id = ?")->execute([$item['item_id']]);
     }
 
+    // อัปเดตราคารวมของ Order
+    if ($total_price > 0) {
+        $pdo->prepare("UPDATE orders SET total_price = ? WHERE id = ?")->execute([$total_price, $order_id]);
+    } else {
+        // ถ้าไม่มีสินค้าถูกสั่งเลย (หมดสต็อกทุกอย่าง) ให้ลบ Order ที่สร้างเผื่อไว้ทิ้ง
+        $pdo->prepare("DELETE FROM orders WHERE id = ?")->execute([$order_id]);
+    }
+
     $pdo->commit();
 
-    // 3. สร้าง success message
+    // 3. สร้างข้อความแจ้งเตือน
     if (!empty($order_summary)) {
-        $msg = '🎉 สั่งซื้อสำเร็จ! สินค้า: ' . implode(', ', $order_summary);
+        $msg = '🎉 สั่งซื้อสำเร็จ! รหัสอ้างอิงออเดอร์: #' . $order_id . ' สินค้า: ' . implode(', ', $order_summary);
         if (!empty($adjusted)) {
             $msg .= ' (ปรับจำนวน: ' . implode(', ', $adjusted) . ')';
         }
@@ -77,7 +95,6 @@ try {
     }
 
     if (empty($order_summary) && !empty($removed)) {
-        // ทุกรายการหมดสต็อก
         $_SESSION['error_msg'] = 'ขออภัย สินค้าทุกชิ้นในตะกร้าหมดสต็อกแล้ว';
         header("Location: ../cart.php");
         exit();
