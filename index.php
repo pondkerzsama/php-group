@@ -135,8 +135,6 @@ if (isset($_SESSION['user_id'])) {
                             No Img
                         </div>
                     <?php endif; ?>
-                        <div class="w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">No Img</div>
-                    <?php endif; ?>
                     
                     <div class="p-5 flex-1 flex flex-col">
                         <div class="text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase mb-1"><?= htmlspecialchars($product['category_name'] ?? 'ไม่มีหมวดหมู่') ?></div>
