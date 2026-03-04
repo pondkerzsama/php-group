@@ -127,9 +127,15 @@ if (isset($_SESSION['user_id'])) {
             <?php foreach($products as $product): ?>
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
                     <?php if($product['img']): ?>
-                        <img src="uploads/<?= htmlspecialchars($product['img']) ?>" alt="<?= htmlspecialchars($product['productname']) ?>" class="w-full h-48 object-cover">
+                        <img src="/std6730202670/php-group-main/uploads/<?= htmlspecialchars($product['img']) ?>" 
+                                alt="<?= htmlspecialchars($product['productname']) ?>" 
+                                class="w-full h-48 object-cover">
                     <?php else: ?>
-                        <div class="w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">No Image</div>
+                        <div class="w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">
+                            No Img
+                        </div>
+                    <?php endif; ?>
+                        <div class="w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">No Img</div>
                     <?php endif; ?>
                     
                     <div class="p-5 flex-1 flex flex-col">
