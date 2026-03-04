@@ -31,18 +31,29 @@ foreach ($cart_items as $item) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ตะกร้าสินค้า - Gameproduct Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
     <script>
-        tailwind.config = {
-            darkMode: 'class',
+        // ตรวจสอบค่าธีมตอนโหลดหน้าเว็บให้เหมือนหน้า index
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
         }
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
+
+        // ฟังก์ชันสลับธีมพร้อมบันทึกค่าลง localStorage
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
         }
     </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
 
-<!-- Navbar -->
 <nav class="bg-[#1e293b] text-white shadow-md mb-8">
     <div class="max-w-6xl mx-auto px-4">
         <div class="flex justify-between items-center h-16">
@@ -51,7 +62,7 @@ foreach ($cart_items as $item) {
                 <span class="font-bold text-xl tracking-tight">Gameproduct Store</span>
             </div>
             <div class="flex items-center space-x-4">
-                <button onclick="toggleDarkMode()" class="p-2 rounded-md hover:bg-gray-700 transition" title="Toggle Dark Mode">🌙/☀️</button>
+                <button onclick="toggleTheme()" class="p-2 rounded-md hover:bg-gray-700 transition" title="Toggle Dark Mode">🌙/☀️</button>
                 <a href="index.php" class="hover:bg-indigo-500 px-3 py-2 rounded-md transition text-sm font-medium">หน้าหลัก</a>
                 <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
                     <a href="admin_index.php" class="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded-md transition text-sm font-medium">⚙️ Admin Panel</a>
@@ -66,7 +77,6 @@ foreach ($cart_items as $item) {
 <div class="max-w-4xl mx-auto px-4 pb-12">
     <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-8">ตะกร้าสินค้าของคุณ</h1>
 
-    <!-- Messages -->
     <?php if(isset($_SESSION['success_msg'])): ?>
         <div class="bg-green-100 text-green-800 p-4 rounded-lg mb-6 shadow-sm border border-green-200">
             <?= $_SESSION['success_msg']; unset($_SESSION['success_msg']); ?>

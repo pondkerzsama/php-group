@@ -61,8 +61,8 @@ try {
         $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?")
             ->execute([$actual_qty, $item['product_id'], $actual_qty]);
 
-        // บันทึกลง order_items
-        $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price_at_time) VALUES (?, ?, ?, ?)")
+        // บันทึกลง order_items (แก้ตรงนี้ให้เป็น price ครับ)
+        $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)")
             ->execute([$order_id, $item['product_id'], $actual_qty, $item['price']]);
 
         $order_summary[] = "{$item['productname']} x{$actual_qty}";
