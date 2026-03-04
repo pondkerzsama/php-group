@@ -126,9 +126,10 @@ if (isset($_SESSION['user_id'])) {
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <?php foreach($products as $product): ?>
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 flex flex-col">
-                    <?php if($product['img']): ?>
-                        <img src="<?= htmlspecialchars($product['img']) ?>" alt="<?= htmlspecialchars($product['productname']) ?>" class="w-full h-48 object-cover">                                alt="<?= htmlspecialchars($product['productname']) ?>" 
-                                class="w-full h-48 object-cover">
+                    <?php if(!empty($product['img'])): ?>
+                        <img src="<?= htmlspecialchars($product['img']) ?>"
+                            alt="<?= htmlspecialchars($product['productname']) ?>"
+                            class="w-full h-48 object-cover" />
                     <?php else: ?>
                         <div class="w-full h-48 bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">
                             No Img
