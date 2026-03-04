@@ -16,13 +16,26 @@ $where_clauses = [];
 $params = [];
 
 if (isset($_GET['search']) && trim($_GET['search']) !== '') {
-    $where_clauses[] = "p.productname LIKE ?";
-    $params[] = "%" . trim($_GET['search']) . "%";
+    $searchTerm = trim($_GET['search']);
+    
+    // เช็คว่าสิ่งที่ค้นหาเป็นตัวเลขหรือไม่
+    if (is_numeric($searchTerm)) {
+        // กรณีเป็นตัวเลข: ค้นหาชื่อ, รายละเอียด หรือ ราคาที่ต่ำกว่า/เท่ากับตัวเลขนั้น
+        $where_clauses[] = "(p.productname LIKE :search1 OR p.detail LIKE :search2 OR p.price <= :search_price)";
+        $params['search1'] = "%" . $searchTerm . "%";
+        $params['search2'] = "%" . $searchTerm . "%";
+        $params['search_price'] = (float)$searchTerm; // แปลงเป็นตัวเลขเผื่อมีจุดทศนิยม
+    } else {
+        // กรณีไม่ใช่ตัวเลข (มีตัวอักษร): ค้นหาแค่จากชื่อและรายละเอียดตามปกติ
+        $where_clauses[] = "(p.productname LIKE :search1 OR p.detail LIKE :search2)";
+        $params['search1'] = "%" . $searchTerm . "%";
+        $params['search2'] = "%" . $searchTerm . "%";
+    }
 }
 
 if (isset($_GET['category']) && $_GET['category'] !== '') {
-    $where_clauses[] = "p.category_id = ?";
-    $params[] = $_GET['category'];
+    $where_clauses[] = "p.category_id = :category";
+    $params['category'] = $_GET['category'];
 }
 
 $where_sql = "";
@@ -66,7 +79,6 @@ if (isset($_SESSION['user_id'])) {
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
 
-<!-- Navbar -->
 <nav class="bg-[#1e293b] text-white shadow-md mb-8">
     <div class="max-w-6xl mx-auto px-4">
         <div class="flex justify-between items-center h-16">
@@ -97,7 +109,6 @@ if (isset($_SESSION['user_id'])) {
 
 <div class="max-w-6xl mx-auto px-4 pb-12">
 
-    <!-- Messages -->
     <?php if(isset($_SESSION['success_msg'])): ?>
         <div class="bg-green-100 text-green-800 p-4 rounded-lg mb-6 shadow-sm border border-green-200">
             <?= $_SESSION['success_msg']; unset($_SESSION['success_msg']); ?>
@@ -109,24 +120,25 @@ if (isset($_SESSION['user_id'])) {
         </div>
     <?php endif; ?>
 
-    <!-- Header & Filter -->
     <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <h1 class="text-3xl font-bold text-gray-800 dark:text-white">สินค้าทั้งหมด</h1>
-        <form method="GET" class="flex gap-2 w-full md:w-auto">
+        <form action="index.php" method="GET" class="flex gap-2 w-full md:w-auto">
             <select name="category" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white dark:border-gray-700">
                 <option value="">ทั้งหมด (Categories)</option>
                 <?php foreach($categories as $cat): ?>
-                    <option value="<?= $cat['id'] ?>" <?= (isset($_GET['category']) && $_GET['category'] == $cat['id']) ? 'selected' : '' ?>>
+                    <option value="<?= $cat['id'] ?>" <?= (isset($_GET['category']) && $_GET['category'] !== '' && $_GET['category'] == $cat['id']) ? 'selected' : '' ?>>
                         <?= htmlspecialchars($cat['name']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>
-            <input type="text" name="search" placeholder="ค้นหาสินค้า..." value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 flex-1 dark:bg-gray-800 dark:text-white dark:border-gray-700">
+            <input type="text" name="search" placeholder="ค้นหาสินค้าหรือราคา..." value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 flex-1 dark:bg-gray-800 dark:text-white dark:border-gray-700">
             <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition">ค้นหา</button>
+            <?php if(!empty($_GET['search']) || !empty($_GET['category'])): ?>
+                <a href="index.php" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400 transition ml-2 flex items-center justify-center">ล้าง</a>
+            <?php endif; ?>
         </form>
     </div>
 
-    <!-- Product Grid -->
     <?php if(count($products) > 0): ?>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <?php foreach($products as $product): ?>
