@@ -134,7 +134,7 @@ if (isset($_SESSION['user_id'])) {
                     
                     <div class="p-5 flex-1 flex flex-col">
                         <div class="text-xs text-indigo-600 dark:text-indigo-400 font-bold uppercase mb-1"><?= htmlspecialchars($product['category_name'] ?? 'ไม่มีหมวดหมู่') ?></div>
-                        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-2 line-clamp-2"><?= htmlspecialchars($product['name']) ?></h2>
+                        <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-2 line-clamp-2"><?= htmlspecialchars($product['productname']) ?></h2>
                         <div class="text-2xl font-bold text-green-600 mb-4 mt-auto border-t pt-4 dark:border-gray-700">฿<?= number_format($product['price'], 2) ?></div>
                         
                         <div class="flex justify-between items-center">
