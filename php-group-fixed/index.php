@@ -98,36 +98,9 @@ $is_filtered = $search !== '' || $category_id !== '' || $min_price !== '' || $ma
         .product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 transition-colors">
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
 
-<nav class="bg-[#1e293b] text-white shadow-md sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-between items-center h-16">
-            <a href="index.php" class="flex items-center gap-2 font-bold text-xl tracking-tight">
-                <span class="text-2xl">🛒</span> Gameproduct Store
-            </a>
-            <div class="flex items-center gap-3">
-                <button onclick="toggleTheme()" class="p-2 rounded-md hover:bg-gray-700 transition">🌙/☀️</button>
-                
-                <?php if(isset($_SESSION['user_id'])): ?>
-                    <?php if(isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-                        <a href="admin_index.php" class="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 rounded-md text-sm font-medium transition text-black">⚙️ Admin</a>
-                    <?php endif; ?>
-                    <a href="cart.php" class="flex items-center gap-1.5 hover:bg-indigo-500 px-3 py-2 rounded-md text-sm font-medium transition">
-                        🛒
-                        <?php if($cart_count > 0): ?>
-                            <span class="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs font-bold"><?= $cart_count ?></span>
-                        <?php endif; ?>
-                    </a>
-                    <span class="text-gray-300 text-sm hidden md:block">สวัสดี, <b><?= htmlspecialchars($_SESSION['username']) ?></b></span>
-                    <a href="logout.php" class="bg-red-500 hover:bg-red-600 px-3 py-2 rounded-md text-sm font-medium transition">ออกระบบ</a>
-                <?php else: ?>
-                    <a href="auth.php" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition shadow-md">ล็อกอิน / สมัครสมาชิก</a>
-                <?php endif; ?>
-            </div>
-        </div>
-    </div>
-</nav>
+<?php include 'includes/navbar.php'; ?>
 
 <div class="max-w-7xl mx-auto px-4 py-8">
 
