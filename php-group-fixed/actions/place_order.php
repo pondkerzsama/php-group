@@ -6,6 +6,38 @@ require_login();
 
 $user_id = $_SESSION['user_id'];
 
+// --- จัดการอัปโหลดไฟล์สลิป (ก่อนเริ่ม Transaction) ---
+$slip_path = null;
+if (isset($_FILES['slip_image']) && $_FILES['slip_image']['error'] === UPLOAD_ERR_OK) {
+    // กำหนดโฟลเดอร์ที่จะเก็บสลิป
+    $upload_dir = '../uploads/slips/';
+    
+    // ถ้ายังไม่มีโฟลเดอร์ ให้ระบบสร้างให้เลย
+    if (!is_dir($upload_dir)) {
+        mkdir($upload_dir, 0777, true);
+    }
+    
+    // ดึงนามสกุลไฟล์ และสร้างชื่อไฟล์ใหม่กันชื่อซ้ำ
+    $file_extension = strtolower(pathinfo($_FILES['slip_image']['name'], PATHINFO_EXTENSION));
+    $new_filename = 'slip_' . time() . '_' . uniqid() . '.' . $file_extension;
+    $target_file = $upload_dir . $new_filename;
+    
+    // ย้ายไฟล์จาก temp ไปยังโฟลเดอร์ของเรา
+    if (move_uploaded_file($_FILES['slip_image']['tmp_name'], $target_file)) {
+        // เก็บพาธสำหรับเซฟลงฐานข้อมูล (ไม่เอา ../)
+        $slip_path = 'uploads/slips/' . $new_filename; 
+    } else {
+        $_SESSION['error_msg'] = 'เกิดข้อผิดพลาดในการอัปโหลดรูปสลิป กรุณาลองใหม่';
+        header("Location: ../checkout.php");
+        exit();
+    }
+} else {
+    $_SESSION['error_msg'] = 'กรุณาแนบรูปสลิปโอนเงินก่อนยืนยันคำสั่งซื้อ';
+    header("Location: ../checkout.php");
+    exit();
+}
+// --------------------------------------------------
+
 try {
     $pdo->beginTransaction();
 
@@ -33,9 +65,9 @@ try {
     $removed       = [];
     $total_price   = 0;
 
-    // สร้าง Order เปล่าๆ ไว้ก่อนเพื่อเอา Order ID
-    $stmt_order = $pdo->prepare("INSERT INTO orders (user_id, total_price) VALUES (?, 0)");
-    $stmt_order->execute([$user_id]);
+    // สร้าง Order เปล่าๆ พร้อมบันทึกพาร์ทของสลิปโอนเงิน
+    $stmt_order = $pdo->prepare("INSERT INTO orders (user_id, total_price, slip_image) VALUES (?, 0, ?)");
+    $stmt_order->execute([$user_id, $slip_path]);
     $order_id = $pdo->lastInsertId();
 
     // 2. ตรวจสอบ ตัด stock และบันทึก order_items
@@ -61,7 +93,7 @@ try {
         $pdo->prepare("UPDATE products SET stock = stock - ? WHERE id = ? AND stock >= ?")
             ->execute([$actual_qty, $item['product_id'], $actual_qty]);
 
-        // บันทึกลง order_items (แก้ตรงนี้ให้เป็น price ครับ)
+        // บันทึกลง order_items
         $pdo->prepare("INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)")
             ->execute([$order_id, $item['product_id'], $actual_qty, $item['price']]);
 
@@ -75,8 +107,11 @@ try {
     if ($total_price > 0) {
         $pdo->prepare("UPDATE orders SET total_price = ? WHERE id = ?")->execute([$total_price, $order_id]);
     } else {
-        // ถ้าไม่มีสินค้าถูกสั่งเลย (หมดสต็อกทุกอย่าง) ให้ลบ Order ที่สร้างเผื่อไว้ทิ้ง
+        // ถ้าไม่มีสินค้าถูกสั่งเลย ให้ลบ Order และลบรูปสลิปทิ้ง
         $pdo->prepare("DELETE FROM orders WHERE id = ?")->execute([$order_id]);
+        if (file_exists('../' . $slip_path)) {
+            unlink('../' . $slip_path);
+        }
     }
 
     $pdo->commit();

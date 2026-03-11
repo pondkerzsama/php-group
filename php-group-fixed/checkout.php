@@ -25,14 +25,22 @@ if (empty($cart_items)) {
 $total = array_sum(array_map(fn($i) => $i['price'] * $i['quantity'], $cart_items));
 ?>
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ยืนยันคำสั่งซื้อ — Gameproduct Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>tailwind.config = { darkMode: 'class' }</script>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 min-h-screen">
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
 
 <nav class="bg-[#1e293b] text-white shadow-md mb-8">
     <div class="max-w-4xl mx-auto px-4 flex justify-between items-center h-16">
@@ -75,17 +83,43 @@ $total = array_sum(array_map(fn($i) => $i['price'] * $i['quantity'], $cart_items
         </div>
         <div class="flex justify-between text-xl font-bold text-gray-800 dark:text-white">
             <span>ยอดสุทธิ</span>
-            <span class="text-green-600 dark:text-green-400">฿<?= number_format($total, 2) ?></span>
+            <span class="text-indigo-600 dark:text-indigo-400">฿<?= number_format($total, 2) ?></span>
         </div>
     </div>
 
-    <form action="actions/place_order.php" method="POST">
+    <div class="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl shadow-sm border border-indigo-100 dark:border-indigo-800 p-6 mb-6 text-center">
+        <h2 class="text-lg font-bold text-indigo-800 dark:text-indigo-300 mb-4">💳 สแกน QR Code เพื่อชำระเงิน</h2>
+        <div class="inline-block bg-white p-3 rounded-xl shadow-sm border border-gray-200 mb-4">
+            <img src="https://promptpay.io/0812345678/<?= $total ?>.png" alt="QR Code" class="w-48 h-48 mx-auto">
+        </div>
+        <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">ชื่อบัญชี: บจก. เกมโปรดักส์ สโตร์</p>
+        <p class="text-sm text-gray-500 dark:text-gray-500">พร้อมเพย์: 081-234-5678</p>
+    </div>
+
+    <form action="actions/place_order.php" method="POST" enctype="multipart/form-data">
+        
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-5 mb-6">
+            <label class="block text-sm font-semibold text-gray-800 dark:text-white mb-2">แนบหลักฐานการโอนเงิน (สลิป) <span class="text-red-500">*</span></label>
+            <input type="file" name="slip_image" accept="image/*" required 
+                   class="block w-full text-sm text-gray-500 dark:text-gray-400
+                          file:mr-4 file:py-2.5 file:px-4
+                          file:rounded-xl file:border-0
+                          file:text-sm file:font-semibold
+                          file:bg-indigo-50 file:text-indigo-700
+                          dark:file:bg-indigo-900/30 dark:file:text-indigo-400
+                          hover:file:bg-indigo-100 dark:hover:file:bg-indigo-800/50
+                          cursor-pointer border border-gray-200 dark:border-gray-700 rounded-xl p-2 transition">
+            <p class="text-[11px] text-gray-400 mt-2">รองรับไฟล์ JPG, PNG, เฉพาะภาพใบเสร็จหรือสลิปการโอนเงินเท่านั้น</p>
+        </div>
+
         <button type="submit"
-            class="w-full bg-green-600 hover:bg-green-700 active:scale-[0.99] text-white font-bold py-4 rounded-2xl text-lg shadow-lg transition-all">
-            ✅ ยืนยันคำสั่งซื้อ
+            class="w-full bg-green-600 hover:bg-green-700 active:scale-[0.99] text-white font-bold py-4 rounded-2xl text-lg shadow-lg transition-all flex justify-center items-center gap-2">
+            ✅ แจ้งชำระเงินและยืนยันคำสั่งซื้อ
         </button>
     </form>
-    <a href="cart.php" class="block text-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm mt-4 transition">← ยังไม่พร้อม กลับไปแก้ตะกร้า</a>
+    <div class="mt-4 text-center">
+        <a href="cart.php" class="inline-block text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-sm transition">← กลับไปแก้ไขตะกร้า</a>
+    </div>
 </div>
 </body>
 </html>
