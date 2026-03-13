@@ -2,6 +2,9 @@
 require_once 'includes/db.php'; 
 require_once 'includes/auth_check.php'; 
 require_admin(); // ต้องเป็น admin เท่านั้น
+// รับค่าจากฟอร์มค้นหา
+// กำหนดค่าเริ่มต้นสำหรับ min และ max หากไม่ได้รับค่าหรือเป็นค่าว่าง
+// ใช้ตัวดำเนินการ null coalescing (??) เพื่อกำหนดค่าเริ่มต้น
 
 $search = $_GET['search'] ?? '';
 $min = (isset($_GET['min']) && $_GET['min'] !== '') ? $_GET['min'] : 0;
@@ -144,3 +147,4 @@ $stmt->execute([
     </div>
 </body>
 </html>
+
